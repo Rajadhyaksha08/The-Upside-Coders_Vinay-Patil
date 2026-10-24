@@ -55,18 +55,18 @@ export function createTestApp() {
  */
 export async function registerAndLogin(agent, overrides = {}) {
   const payload = {
-    name:     'Test User',
-    phone:    '9876543210',
-    password: 'Password@123',
-    role:     'customer',
+    name:  'Test User',
+    phone: '9876543210',
+    pin:   '1234',
+    role:  'customer',
     ...overrides,
   };
 
   await agent.post('/api/auth/register').send(payload);
   const loginRes = await agent.post('/api/auth/login').send({
-    phone:    payload.phone,
-    password: payload.password,
-    role:     payload.role,
+    phone: payload.phone,
+    pin:   payload.pin,
+    role:  payload.role,
   });
 
   return { user: loginRes.body.user, payload };
@@ -77,18 +77,17 @@ export async function registerAndLogin(agent, overrides = {}) {
  */
 export async function registerAndLoginWorker(agent, overrides = {}) {
   return registerAndLogin(agent, {
-    name:  'Test Worker',
-    phone: '9123456789',
-    role:  'worker',
-    workerData: {
-      city:              'Delhi',
-      pincode:           '110001',
-      experience:        '3 years',
-      languages:         ['Hindi', 'English'],
-      rateType:          'hourly',
-      rate:              350,
-      serviceCategoryId: 1,
-    },
+    name:       'Test Worker',
+    phone:      '9123456789',
+    pin:        '5678',
+    role:       'worker',
+    service:    'electrician',
+    city:       'Delhi',
+    pincode:    '110001',
+    experience: '3 years',
+    languages:  ['Hindi', 'English'],
+    rateType:   'hourly',
+    rate:       350,
     ...overrides,
   });
 }

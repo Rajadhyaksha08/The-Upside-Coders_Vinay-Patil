@@ -10,7 +10,9 @@ import { availabilityRouter } from '../modules/availability/availability.routes.
 import { requestsRouter }     from '../modules/requests/requests.routes.js';
 import { bookingsRouter }     from '../modules/bookings/bookings.routes.js';
 import { reviewsRouter }      from '../modules/reviews/reviews.routes.js';
+import { searchRouter }       from '../modules/search/search.routes.js';
 import { ivrRouter }          from '../modules/ivr/ivr.routes.js';
+import { adminRouter }        from '../modules/admin/admin.routes.js';
 
 export const router = Router();
 
@@ -22,4 +24,6 @@ router.use('/workers',      availabilityRouter);
 router.use('/requests',     requestsRouter);
 router.use('/bookings',     bookingsRouter);
 router.use('/reviews',      reviewsRouter);
+router.use('/search',       searchRouter);
 router.use('/ivr',          ivrRouter);
+router.use('/admin',        adminRouter);

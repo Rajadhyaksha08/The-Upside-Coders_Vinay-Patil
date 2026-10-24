@@ -41,6 +41,16 @@ Verify end-to-end functionality and data persistence.
 feat(backend): implement Phase 1 database and API foundation
 
 
+- Added full CRUD for workers (profile + availability) and request lifecycle.
+- Implemented auth flow: register, login, session info, logout.
+- Added health endpoint (`GET /api/health`).
+- Integrated Zod validation (422 for invalid input) and standardized error payload (`error.code`).
+- Updated Vitest config (sequential execution, proper DB path) and test suite (45 passing, 13 pending).
+- Fixed DB path resolution in test setup and removed premature DB close in health test.
+- Updated `API_CONTRACTS.md` under Ninad's section to reflect new endpoints.
+
+feat: implement and test Health, Auth, Workers, and Requests APIs
+
 
 ### 2. Vinay
 
