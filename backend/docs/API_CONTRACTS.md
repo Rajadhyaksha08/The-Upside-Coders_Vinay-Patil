@@ -17,6 +17,17 @@
 * Set up Vitest and verified that the health endpoint test passes.
 * Reached the initial backend and database setup milestone.
 
+feat(backend):  feat(backend): initialize modular Express backend and database scaffold
+
+- Organize backend modules by feature and responsibility 
+- Plan routes, controllers, services, repositories, and schemas 
+- Introduce centralized environment configuration 
+- Prepare shared middleware and utility structure 
+- Establish incremental module integration workflow
+
+feat(backend): establish modular server architecture
+
+
 ### 2. Vinay
 
 **Responsibilities:** To be updated as work is assigned.
