@@ -3,14 +3,6 @@ import { CUSTOMERS, WORKERS } from '../data/mockData';
 
 const AuthContext = createContext(null);
 
-export const DEMO_ACCOUNTS = [
-  { role: 'customer', id: 'c1', name: 'Priya Sharma', phone: '9811234567', pin: '1234' },
-  { role: 'customer', id: 'c2', name: 'Ajay Mehta',  phone: '9822334455', pin: '1234' },
-  { role: 'worker',   id: 'w1', name: 'Ramesh Kumar', phone: '9876543210', pin: '1234' },
-  { role: 'worker',   id: 'w3', name: 'Geeta Devi',   phone: '9765432109', pin: '1234' },
-  { role: 'admin',    id: 'a1', name: 'Admin User',   phone: '9000000000', pin: '0000' },
-];
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
@@ -20,6 +12,16 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+
+  const [customWorkers, setCustomWorkers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sevasaathi_custom_workers');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -34,51 +36,134 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
+  // Synchronize custom workers to mock data array
+  useEffect(() => {
+    if (customWorkers.length > 0) {
+      customWorkers.forEach((cw) => {
+        const exists = WORKERS.find((w) => w.id === cw.id || w.phone === cw.phone);
+        if (!exists) {
+          WORKERS.unshift(cw);
+        }
+      });
+    }
+  }, [customWorkers]);
+
   const login = async (phone, pin, role) => {
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 400)); // short realistic delay
+    await new Promise((r) => setTimeout(r, 450)); // realistic API auth roundtrip
 
     const cleanPhone = String(phone).replace(/\D/g, '');
 
-    // 1. Check exact match in DEMO_ACCOUNTS
-    let account = DEMO_ACCOUNTS.find(
-      (a) => a.phone === cleanPhone && a.role === role
-    );
+    let matchedUser = null;
 
-    // 2. If not found by phone, check if any demo account matches this role
-    if (!account) {
-      if (role === 'admin') {
-        account = DEMO_ACCOUNTS.find((a) => a.role === 'admin');
-      } else if (role === 'worker') {
-        account = {
-          role: 'worker',
-          id: 'w1',
-          name: 'Ramesh Kumar',
-          phone: cleanPhone || '9876543210',
-          pin: pin || '1234',
-        };
+    if (role === 'worker') {
+      // 1. Check custom registered workers first
+      const customWorker = customWorkers.find((w) => w.phone === cleanPhone);
+      if (customWorker) {
+        matchedUser = { ...customWorker, role: 'worker' };
       } else {
-        account = {
+        // 2. Check existing workers
+        const existingWorker = WORKERS.find((w) => w.phone === cleanPhone);
+        if (existingWorker) {
+          matchedUser = { ...existingWorker, role: 'worker' };
+        } else {
+          // 3. Any new worker phone number works automatically!
+          matchedUser = {
+            id: `w_${cleanPhone.slice(-4)}`,
+            name: 'Partner ' + cleanPhone.slice(-4),
+            phone: cleanPhone,
+            city: 'Delhi-NCR',
+            pincode: '110001',
+            skills: ['General Repair', 'Maintenance'],
+            avatarColor: 'bg-teal-600',
+            initials: 'WP',
+            rating: 4.8,
+            reviewCount: 14,
+            hourlyRate: 350,
+            available: true,
+            verified: true,
+            aadhaarVerified: true,
+            experience: '4 years',
+            role: 'worker',
+          };
+        }
+      }
+    } else if (role === 'customer') {
+      const existingCustomer = CUSTOMERS.find((c) => c.phone === cleanPhone);
+      if (existingCustomer) {
+        matchedUser = { ...existingCustomer, role: 'customer' };
+      } else {
+        matchedUser = {
+          id: `c_${cleanPhone.slice(-4)}`,
+          name: 'Customer ' + cleanPhone.slice(-4),
+          phone: cleanPhone,
+          city: 'Gurugram',
+          pincode: '122001',
+          initials: 'CS',
+          avatarColor: 'bg-teal-700',
+          totalBookings: 1,
           role: 'customer',
-          id: 'c1',
-          name: 'Priya Sharma',
-          phone: cleanPhone || '9811234567',
-          pin: pin || '1234',
         };
       }
+    } else {
+      // Admin
+      matchedUser = {
+        id: 'admin_1',
+        name: 'Chief Moderator',
+        phone: cleanPhone,
+        initials: 'AD',
+        avatarColor: 'bg-slate-800',
+        role: 'admin',
+      };
     }
 
-    const profileData =
-      role === 'customer'
-        ? CUSTOMERS.find((c) => c.id === account.id) || CUSTOMERS[0]
-        : role === 'worker'
-        ? WORKERS.find((w) => w.id === account.id) || WORKERS[0]
-        : { id: 'a1', name: 'Admin User', initials: 'AU', avatarColor: 'bg-slate-600', role: 'admin' };
-
-    const fullUser = { ...account, ...profileData, role };
-    setUser(fullUser);
+    setUser(matchedUser);
     setLoading(false);
-    return { success: true, user: fullUser };
+    return { success: true, user: matchedUser };
+  };
+
+  const registerWorker = (formData) => {
+    const cleanPhone = String(formData.phone || '').replace(/\D/g, '');
+    const newWorker = {
+      id: `w_${Date.now()}`,
+      name: formData.fullName || 'Skilled Partner',
+      initials: (formData.fullName || 'SP')
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2),
+      avatarColor: 'bg-teal-600',
+      phone: cleanPhone,
+      city: formData.city || 'Delhi-NCR',
+      pincode: formData.pin || '110001',
+      distance: '1.8 km',
+      skills: formData.skills && formData.skills.length > 0 ? formData.skills : [formData.service || 'Electrician'],
+      hourlyRate: formData.rateType === 'hourly' ? Number(formData.rate) || 400 : null,
+      fixedRate: formData.rateType === 'fixed' ? Number(formData.rate) || 500 : null,
+      available: true,
+      verified: true,
+      aadhaarVerified: !!formData.aadhaar,
+      experience: formData.experience || '3 years',
+      completedJobs: 0,
+      bio: `${formData.fullName} is an experienced professional in ${formData.service || 'Home Services'}. Available for instant bookings.`,
+      languages: formData.languages || ['Hindi', 'English'],
+      workingHours: `${formData.startTime || '8:00 AM'} – ${formData.endTime || '8:00 PM'}`,
+      reviews: [],
+      role: 'worker',
+    };
+
+    const updated = [newWorker, ...customWorkers];
+    setCustomWorkers(updated);
+    try {
+      localStorage.setItem('sevasaathi_custom_workers', JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
+
+    WORKERS.unshift(newWorker);
+    setUser(newWorker);
+    return newWorker;
   };
 
   const logout = () => {
@@ -86,21 +171,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('sevasaathi_user');
   };
 
-  const demoLogin = (account) => {
-    const profileData =
-      account.role === 'customer'
-        ? CUSTOMERS.find((c) => c.id === account.id) || CUSTOMERS[0]
-        : account.role === 'worker'
-        ? WORKERS.find((w) => w.id === account.id) || WORKERS[0]
-        : { id: 'a1', name: 'Admin User', initials: 'AU', avatarColor: 'bg-slate-600', role: 'admin' };
-
-    const fullUser = { ...account, ...profileData };
-    setUser(fullUser);
-    return fullUser;
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, demoLogin }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, registerWorker }}>
       {children}
     </AuthContext.Provider>
   );

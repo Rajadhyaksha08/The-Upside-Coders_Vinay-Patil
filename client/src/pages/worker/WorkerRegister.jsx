@@ -6,6 +6,7 @@ import {
   DollarSign, Shield, ChevronRight, ChevronLeft, Check
 } from "lucide-react";
 import OTPInput from "../../components/OTPInput";
+import { useAuth } from "../../context/AuthContext";
 
 const CITIES = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune"];
 
@@ -69,6 +70,7 @@ const StepIndicator = ({ steps, current }) => (
 
 export default function WorkerRegister() {
   const navigate = useNavigate();
+  const { registerWorker } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -148,7 +150,12 @@ export default function WorkerRegister() {
   const handleSubmit = () => {
     if (!validateStep()) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); toast.success("Welcome to SevaSaathi! Profile under review."); navigate("/worker"); }, 2000);
+    setTimeout(() => {
+      setLoading(false);
+      registerWorker(form);
+      toast.success(`Welcome ${form.fullName || "Partner"}! Profile activated.`);
+      navigate("/worker");
+    }, 1200);
   };
 
   return (
