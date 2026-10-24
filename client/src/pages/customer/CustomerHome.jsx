@@ -1,6 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Clock, ChevronRight, Bell } from 'lucide-react';
+import {
+  Search,
+  MapPin,
+  Clock,
+  ChevronRight,
+  Bell,
+  ShieldCheck,
+  Zap,
+  Star,
+  Sparkles,
+  Phone,
+  ArrowRight,
+  SlidersHorizontal,
+  Flame,
+  Award,
+  CheckCircle2,
+} from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import BottomNav from '../../components/BottomNav';
 import ServiceCard from '../../components/ServiceCard';
@@ -8,145 +24,205 @@ import WorkerCard from '../../components/WorkerCard';
 import { useAuth } from '../../context/AuthContext';
 import { SERVICES, WORKERS, BOOKINGS } from '../../data/mockData';
 
-const ACTIVE_STATUSES = ['accepted', 'en_route', 'arrived', 'in_progress'];
-
-const STATUS_LABEL = {
-  accepted: 'Accepted',
-  en_route: 'Worker En Route',
-  arrived: 'Worker Arrived',
-  in_progress: 'In Progress',
-};
-
-const STATUS_COLOR = {
-  accepted: 'bg-blue-100 text-blue-700',
-  en_route: 'bg-amber-100 text-amber-700',
-  arrived: 'bg-green-100 text-green-700',
-  in_progress: 'bg-teal-100 text-teal-700',
-};
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Suprabhat';
-  if (h < 17) return 'Namaste';
-  return 'Shubh Sandhya';
-}
-
 export default function CustomerHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState(user?.city || 'Delhi-NCR');
+  const [selectedPincode, setSelectedPincode] = useState(user?.pincode || '110005');
+  const [activeCategory, setActiveCategory] = useState('All');
 
-  const today = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
+  // Filter available workers
+  const availableWorkers = WORKERS.filter((w) => w.available).slice(0, 4);
 
-  const activeBookings = (BOOKINGS || []).filter(
-    (b) => b.customerId === user?.id && ACTIVE_STATUSES.includes(b.status)
-  );
+  // Active bookings in progress
+  const activeBookings = BOOKINGS.filter(
+    (b) => ['accepted', 'en_route', 'arrived'].includes(b.status)
+  ).slice(0, 1);
 
-  const availableWorkers = (WORKERS || [])
-    .filter((w) => w.isAvailable)
-    .slice(0, 4);
+  const quickFilterPills = [
+    { id: 'All', label: 'All Services', icon: '✨' },
+    { id: 'Emergency', label: '⚡ Emergency 15-Min', icon: '⚡' },
+    { id: 'Cleaning', label: 'Deep Cleaning', icon: '🧹' },
+    { id: 'Electrical', label: 'Wiring & Fans', icon: '💡' },
+    { id: 'Plumbing', label: 'Leak Repair', icon: '🔧' },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 md:pb-8">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4">
-        {/* Greeting */}
-        <div className="flex items-start justify-between mb-5">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        {/* ========================================================= */}
+        {/* HERO GREETING & LOCATION HEADER                           */}
+        {/* ========================================================= */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
-              {getGreeting()}, {user?.name?.split(' ')[0] || 'Customer'}! 👋
-            </h2>
-            <div className="flex items-center gap-1.5 text-slate-500 text-sm mt-1">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{user?.city || 'Mumbai'}</span>
-              <span className="mx-1 text-slate-300">·</span>
-              <Clock className="w-3.5 h-3.5" />
-              <span>{today}</span>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wider text-teal-700">
+                Verified Hyperlocal Network
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
+              Namaste, {user?.name?.split(' ')[0] || 'Guest'}! 👋
+            </h1>
+            <p className="text-xs text-slate-500">
+              Trusted, Aadhaar-verified local home experts within 5–15 km
+            </p>
+          </div>
+
+          {/* Location Selector Pill */}
+          <div className="flex items-center gap-2 self-start sm:self-auto bg-white border border-slate-200 px-3.5 py-2 rounded-2xl shadow-sm text-xs">
+            <MapPin className="w-4 h-4 text-teal-600 flex-shrink-0" />
+            <div>
+              <span className="font-bold text-slate-800">{selectedCity}</span>
+              <span className="text-slate-400 ml-1">({selectedPincode})</span>
             </div>
           </div>
-          <button
-            className="relative w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm"
-            onClick={() => {}}
+        </div>
+
+        {/* ========================================================= */}
+        {/* MODERN SEARCH BAR & EMERGENCY LAUNCHER                    */}
+        {/* ========================================================= */}
+        <div className="relative">
+          <div
+            onClick={() => navigate('/customer/search')}
+            className="flex items-center gap-3 bg-white border-2 border-teal-500/30 hover:border-teal-500 rounded-2xl px-4 py-3.5 shadow-sm cursor-pointer transition-all duration-150 group"
           >
-            <Bell className="w-5 h-5 text-slate-600" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
+            <Search className="w-5 h-5 text-teal-600 group-hover:scale-110 transition-transform" />
+            <span className="text-slate-400 text-sm flex-1 font-medium">
+              Search for electrician, plumber, cook, maid...
+            </span>
+            <span className="bg-teal-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 group-hover:bg-teal-700">
+              Find <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
         </div>
 
-        {/* Search bar */}
-        <div
-          className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 mb-6 shadow-sm cursor-pointer hover:border-teal-400 transition-colors"
-          onClick={() => navigate('/customer/search')}
-        >
-          <Search className="w-5 h-5 text-teal-600 shrink-0" />
-          <span className="text-slate-400 text-sm flex-1">
-            Search for electrician, plumber, maid…
-          </span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+        {/* Quick Filter Horizontal Scroll Pills */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+          {quickFilterPills.map((pill) => (
+            <button
+              key={pill.id}
+              onClick={() => setActiveCategory(pill.id)}
+              className={`px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                activeCategory === pill.id
+                  ? 'bg-teal-700 text-white shadow-sm ring-2 ring-teal-200 font-bold'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <span>{pill.icon}</span>
+              <span>{pill.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Active bookings */}
+        {/* ========================================================= */}
+        {/* ACTIVE LIVE BOOKING PROGRESS WIDGET (IF ANY)              */}
+        {/* ========================================================= */}
         {activeBookings.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-base font-bold text-slate-900 mb-3">🔴 Active Bookings</h3>
-            <div className="space-y-3">
-              {activeBookings.map((b) => {
-                const worker = (WORKERS || []).find((w) => w.id === b.workerId);
-                const service = (SERVICES || []).find((s) => s.id === b.serviceId);
-                return (
-                  <div
-                    key={b.id}
-                    className="bg-white rounded-xl border border-teal-200 p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{service?.icon || '🔧'}</span>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-800">
-                            {service?.name || 'Service'}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {worker?.name || 'Worker'}
-                          </div>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLOR[b.status]}`}>
-                        {STATUS_LABEL[b.status]}
-                      </span>
-                    </div>
-                    <button
-                      className="w-full btn-primary py-2 text-sm"
-                      onClick={() => navigate(`/customer/track/${b.id}`)}
-                    >
-                      Track Booking
-                    </button>
-                  </div>
-                );
-              })}
+          <div
+            onClick={() => navigate(`/customer/track/${activeBookings[0].id}`)}
+            className="card p-4 sm:p-5 bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white shadow-lg cursor-pointer hover:scale-[1.01] transition-transform"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-400" />
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-teal-300">
+                  Live Service In Progress
+                </span>
+              </div>
+              <span className="badge bg-teal-500/20 text-teal-200 border border-teal-500/40 text-[11px]">
+                Order #{activeBookings[0].id}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-white">
+                  {activeBookings[0].workerName} is on the way 🛵
+                </h3>
+                <p className="text-xs text-teal-200 mt-0.5">
+                  Service: {activeBookings[0].service} • Arriving by {activeBookings[0].time}
+                </p>
+              </div>
+              <span className="btn-primary text-xs py-2 px-3 bg-white text-teal-900 font-bold hover:bg-teal-50">
+                Track Live ➔
+              </span>
+            </div>
+
+            {/* Doorstep Code Hint */}
+            <div className="mt-3 pt-3 border-t border-teal-700/60 flex justify-between items-center text-xs">
+              <span className="text-teal-200">Doorstep Arrival OTP:</span>
+              <span className="font-mono font-bold tracking-widest text-teal-100 bg-teal-950 px-2 py-0.5 rounded border border-teal-600/40">
+                {activeBookings[0].arrivalOTP || '4821'}
+              </span>
             </div>
           </div>
         )}
 
-        {/* Service Categories */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-slate-900">Services</h3>
+        {/* ========================================================= */}
+        {/* TRUST BANNER PROMO                                        */}
+        {/* ========================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="card p-3.5 bg-teal-50/60 border border-teal-200 flex items-center gap-3">
+            <div className="p-2.5 bg-teal-600 text-white rounded-xl">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-xs">Aadhaar Verified</p>
+              <p className="text-[11px] text-slate-500">100% background checked</p>
+            </div>
+          </div>
+
+          <div className="card p-3.5 bg-amber-50/60 border border-amber-200 flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500 text-white rounded-xl">
+              <Phone className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-xs">Number Masked</p>
+              <p className="text-[11px] text-slate-500">Full contact privacy</p>
+            </div>
+          </div>
+
+          <div className="card p-3.5 bg-indigo-50/60 border border-indigo-200 flex items-center gap-3">
+            <div className="p-2.5 bg-indigo-600 text-white rounded-xl">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-xs">0% Hidden Charges</p>
+              <p className="text-[11px] text-slate-500">Pay directly after OTP</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SERVICE CATEGORIES GRID                                   */}
+        {/* ========================================================= */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">
+                Explore Services
+              </h2>
+              <p className="text-xs text-slate-500">Transparent rates, upfront quotes</p>
+            </div>
             <button
-              className="text-sm text-teal-600 font-medium"
               onClick={() => navigate('/customer/search')}
+              className="text-xs font-bold text-teal-700 hover:underline flex items-center gap-0.5"
             >
-              See all
+              View All 10 <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {(SERVICES || []).slice(0, 8).map((service) => (
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {SERVICES.slice(0, 10).map((service) => (
               <ServiceCard
                 key={service.id}
                 service={service}
-                compact
                 onClick={() =>
                   navigate('/customer/search', { state: { serviceId: service.id } })
                 }
@@ -155,30 +231,53 @@ export default function CustomerHome() {
           </div>
         </div>
 
-        {/* Nearby Workers */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-slate-900">Nearby Workers</h3>
+        {/* ========================================================= */}
+        {/* TOP VERIFIED LOCAL WORKERS (NEAR YOU)                     */}
+        {/* ========================================================= */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">
+                Top Rated Saathis Near You
+              </h2>
+              <p className="text-xs text-slate-500">Available right now for quick dispatch</p>
+            </div>
             <button
-              className="text-sm text-teal-600 font-medium"
               onClick={() => navigate('/customer/workers')}
+              className="text-xs font-bold text-teal-700 hover:underline flex items-center gap-0.5"
             >
-              See all
+              See All <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {availableWorkers.map((worker) => (
-              <div key={worker.id} className="snap-start shrink-0 w-52">
-                <WorkerCard
-                  worker={worker}
-                  compact
-                  onClick={() => navigate(`/customer/worker/${worker.id}`)}
-                />
-              </div>
+              <WorkerCard key={worker.id} worker={worker} />
             ))}
           </div>
         </div>
-      </div>
+
+        {/* ========================================================= */}
+        {/* CALL IVR FLOATING PROMO BANNER                            */}
+        {/* ========================================================= */}
+        <div className="card p-5 bg-gradient-to-r from-slate-900 to-teal-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="badge bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px]">
+              Toll-Free 1800-SEVA-SA
+            </span>
+            <h3 className="text-base font-bold text-white">Know a worker without a smartphone?</h3>
+            <p className="text-xs text-slate-300">
+              They can dial our 2G IVR simulator from any basic phone to receive jobs with 0 internet.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/ivr')}
+            className="btn-primary py-2.5 px-4 text-xs whitespace-nowrap bg-teal-500 hover:bg-teal-600 text-slate-950 font-bold"
+          >
+            Launch IVR Simulator ➔
+          </button>
+        </div>
+      </main>
 
       <BottomNav />
     </div>
