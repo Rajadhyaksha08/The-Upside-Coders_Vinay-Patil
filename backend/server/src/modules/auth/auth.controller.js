@@ -37,7 +37,7 @@ export const logout = asyncHandler(async (req, res) => {
     if (err) {
       console.error('[logout] session destroy error', err);
     }
-    res.clearCookie('connect.sid');
+    res.clearCookie('kc.sid');
     res.status(200).json({ message: 'Logged out successfully.' });
   });
 });
