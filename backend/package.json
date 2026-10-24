@@ -1,0 +1,27 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modular backend scaffold for Project",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server/src/server.js",
+    "start": "node server/src/server.js",
+    "db:migrate": "node server/src/db/migrate.js",
+    "db:seed": "node server/src/db/seed.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  }
+}
