@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -182,9 +182,17 @@ export default function WorkerRegister() {
             </div>
             <div>
               <label className="label">Mobile Number *</label>
-              <div className="flex gap-2">
-                <span className="input-field w-16 text-center font-medium">+91</span>
-                <input className={`input-field flex-1 ${errors.phone ? "border-red-400" : ""}`} placeholder="9876543210" value={form.phone} maxLength={10} onChange={e => update("phone", e.target.value.replace(/\D/g, ""))} />
+              <div className={`flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 bg-white transition-all shadow-sm ${errors.phone ? "border-red-400" : "border-slate-200"}`}>
+                <span className="inline-flex items-center px-4 bg-slate-50 text-slate-600 font-bold text-sm border-r border-slate-200 select-none">
+                  +91
+                </span>
+                <input
+                  className="w-full px-4 py-3 text-sm font-semibold tracking-wide text-slate-800 placeholder:text-slate-400 focus:outline-none bg-white"
+                  placeholder="9876543210"
+                  value={form.phone}
+                  maxLength={10}
+                  onChange={e => update("phone", e.target.value.replace(/\D/g, ""))}
+                />
               </div>
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>

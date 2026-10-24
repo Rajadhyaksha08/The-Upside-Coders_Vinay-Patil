@@ -143,8 +143,8 @@ export default function Login() {
         {/* Phone Input */}
         <div>
           <label className="label">Registered Mobile Number</label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">
+          <div className="flex rounded-xl border border-slate-200 overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-transparent bg-white transition-all shadow-sm">
+            <span className="inline-flex items-center px-4 bg-slate-50 text-slate-600 font-bold text-sm border-r border-slate-200 select-none">
               +91
             </span>
             <input
@@ -156,7 +156,7 @@ export default function Login() {
                 setError('');
               }}
               placeholder="98XXXXXXXX"
-              className="input-field pl-13 text-sm font-medium"
+              className="w-full px-4 py-3 text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 focus:outline-none bg-white"
             />
           </div>
         </div>

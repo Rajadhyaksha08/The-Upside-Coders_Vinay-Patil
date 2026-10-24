@@ -109,13 +109,19 @@ export default function CustomerProfile() {
               </div>
               <div>
                 <label className="label">Phone Number</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="input-field"
-                  required
-                />
+                <div className="flex rounded-xl border border-slate-200 overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 bg-white transition-all">
+                  <span className="inline-flex items-center px-3 bg-slate-50 text-slate-600 font-bold text-xs border-r border-slate-200 select-none">
+                    +91
+                  </span>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                    className="w-full px-3 py-2.5 text-sm font-semibold tracking-wide text-slate-800 focus:outline-none bg-white"
+                    required
+                  />
+                </div>
               </div>
               <div>
                 <label className="label">City</label>
